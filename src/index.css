@@ -1,0 +1,293 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   FONTES — auto-hospedadas em /public/fonts. Nenhuma chamada externa.
+   ------------------------------------------------------------------ */
+@font-face {
+  font-family: 'Fraunces Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/fraunces-variable-latin.woff2') format('woff2-variations');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-sans-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+/* ------------------------------------------------------------------
+   TOKENS
+   Valores em triplas RGB para permitir modificador de opacidade
+   no Tailwind. Hex de referencia ao lado.
+   ------------------------------------------------------------------ */
+:root {
+  --pedra: 228 231 222;      /* #E4E7DE  fundo principal */
+  --tinta: 27 42 47;         /* #1B2A2F  texto e traco */
+  --palha: 216 162 29;       /* #D8A21D  acento — so como FUNDO ou marcador; nunca texto sobre claro */
+  --folha: 63 107 67;        /* #3F6B43  tecido vivo / rebrota (ilustracoes) */
+  --oliva: 138 148 131;      /* #8A9483  linhas de apoio, filetes, trama */
+  --oliva-texto: 74 84 73;   /* #4A5449  oliva escurecida — texto secundario (AA: 7.1:1 sobre papel) */
+  --papel: 242 243 237;      /* #F2F3ED  superficies elevadas */
+
+  --trama: 14px;             /* passo da nervura de fundo */
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* offset para a barra de navegacao fixa nao cobrir o titulo da secao */
+    scroll-padding-top: 4.75rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-pedra font-sans text-corpo text-tinta antialiased;
+    overflow-x: hidden;
+  }
+
+  /* foco de teclado visivel em TODO controle */
+  :focus-visible {
+    outline: 2px solid rgb(var(--tinta));
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  /* sobre superficie escura o anel vira palha */
+  .sobre-tinta :focus-visible {
+    outline-color: rgb(var(--palha));
+  }
+
+  ::selection {
+    background: rgb(var(--palha));
+    color: rgb(var(--tinta));
+  }
+}
+
+@layer components {
+  /* ---- tipografia de papel ---- */
+  .display {
+    font-family: 'Fraunces Variable', Georgia, serif;
+    font-variation-settings: 'SOFT' 28, 'WONK' 1, 'opsz' 60, 'wght' 700;
+    font-weight: 700;
+  }
+  .display-leve {
+    font-family: 'Fraunces Variable', Georgia, serif;
+    font-variation-settings: 'SOFT' 28, 'WONK' 1, 'opsz' 40, 'wght' 400;
+    font-weight: 400;
+  }
+
+  /* rotulo de caderno de campo */
+  .rotulo {
+    @apply font-mono text-rotulo uppercase;
+    font-weight: 500;
+  }
+
+  /* ---- trama de fundo: nervura paralela da folha de Poaceae.
+         unico ornamento do projeto. ---- */
+  .trama {
+    background-image: repeating-linear-gradient(
+      to right,
+      rgb(var(--oliva) / 0.08) 0,
+      rgb(var(--oliva) / 0.08) 1px,
+      transparent 1px,
+      transparent var(--trama)
+    );
+  }
+
+  /* ---- superficies ---- */
+  .cartao {
+    @apply bg-papel border border-oliva/45 rounded-card;
+  }
+
+  /* ---- alvo de toque minimo 44x44 ---- */
+  .toque {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* ---- botoes ---- */
+  .btn {
+    @apply toque inline-flex items-center justify-center gap-2 rounded-plana
+           border border-tinta px-4 text-apoio font-semibold
+           transition-colors duration-curta;
+  }
+  .btn-solido {
+    @apply btn bg-tinta text-pedra;
+  }
+  .btn-vazado {
+    @apply btn bg-transparent text-tinta;
+  }
+  .btn-acento {
+    @apply btn bg-palha text-tinta border-tinta;
+  }
+
+  /* Link de pular para o conteudo. Fica fora da tela e desce ao receber foco.
+     Feito com posicionamento proprio, e nao com sr-only + variantes de foco:
+     assim o alvo mantem os 44px sem depender da ordem das utilidades. */
+  .pular {
+    position: absolute;
+    left: 0.75rem;
+    top: -6rem;
+    z-index: 50;
+    transition: top 160ms ease-out;
+  }
+  .pular:focus {
+    top: 0.75rem;
+  }
+
+  /* filete horizontal de prancha */
+  .filete {
+    @apply h-px w-full bg-oliva/55;
+  }
+
+  /* Halo de selecao na prancha: a peca escolhida e redesenhada atras de si
+     mesma com traco ocre grosso. Declaracoes CSS vencem os atributos de
+     apresentacao do SVG, entao isso sobrepoe fill/stroke sem duplicar codigo. */
+  .halo-selecao path,
+  .halo-selecao circle,
+  .halo-selecao ellipse,
+  .halo-selecao line {
+    fill: none;
+    stroke: rgb(var(--palha));
+    stroke-width: 9px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+}
+
+/* ------------------------------------------------------------------
+   MOVIMENTO — uma unica sequencia orquestrada (a prancha crescendo).
+   Fora dela, so transicoes de estado de 160–200ms.
+   ------------------------------------------------------------------ */
+@keyframes brotar {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* fill-mode `backwards` de proposito: o estado FINAL e o estado natural do
+   elemento (visivel, sem transform). Se a animacao nao rodar — navegador
+   antigo, motion reduzido, CSS parcialmente carregado — o desenho aparece
+   inteiro em vez de sumir. */
+.cresce {
+  transform-box: view-box;
+  animation: brotar 900ms cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
+}
+.chamada {
+  animation: surgir 260ms ease-out backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .cresce,
+  .chamada {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   SLIDER DE TEMPERATURA — alvo generoso, sem depender de :hover
+   ------------------------------------------------------------------ */
+.termometro {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px; /* area de toque */
+  background: transparent;
+  cursor: pointer;
+}
+.termometro::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(var(--tinta) / 0.18);
+}
+.termometro::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(var(--tinta) / 0.18);
+}
+.termometro::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 34px;
+  height: 34px;
+  margin-top: -14px;
+  border-radius: 50%;
+  background: rgb(var(--palha));
+  border: 2px solid rgb(var(--tinta));
+  box-shadow: 0 1px 0 rgb(var(--tinta) / 0.25);
+}
+.termometro::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgb(var(--palha));
+  border: 2px solid rgb(var(--tinta));
+}
+.termometro:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid rgb(var(--tinta));
+  outline-offset: 3px;
+}
+.termometro:focus-visible::-moz-range-thumb {
+  outline: 2px solid rgb(var(--tinta));
+  outline-offset: 3px;
+}
+
+/* barra de navegacao horizontal sem barra de rolagem visivel */
+.rolagem-limpa {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rolagem-limpa::-webkit-scrollbar {
+  display: none;
+}
